@@ -48,15 +48,15 @@ class TemperatureSensor(Sensor):
 
 
 class HumiditySensor(Sensor):
-    warn_low = 30.0
-    warn_high = 60.0
+    warn_low = 25.0
+    warn_high = 55.0
 
     def __init__(self):
-        super().__init__("Humidity", "%", 20.0, 70.0)
+        super().__init__("Humidity", "%", 20.0, 60.0)
 
     def _generate(self):
         base = 40.0
-        sine = 30.0 * math.sin(self._tick * 0.08 + 1.0)
+        sine = 20.0 * math.sin(self._tick * 0.08 + 1.0)
         noise = random.uniform(-1.0, 1.0)
         value = round(max(self.min_val, min(self.max_val, base + sine + noise)), 1)
         return value

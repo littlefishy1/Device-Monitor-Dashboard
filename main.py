@@ -1,8 +1,15 @@
 import sys
+
 from PyQt6.QtCore import Qt, QDateTime
 from PyQt6.QtWidgets import QApplication, QMainWindow, QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
+
 from core.simulator import DataSimulator
+
+from collections import deque
+import pyqtgraph as pg
+
+_CHART_COLORS = ["#ef5350", "#42a5f5", "#66bb6a"]
 
 
 class SensorCard(QFrame):
@@ -46,20 +53,50 @@ class SensorCard(QFrame):
         self._value_label.setText(str(val))
         if self._sensor.warn_high is not None and val > self._sensor.warn_high:
             self._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #e53935;")
+            self._warn_label.setStyleSheet("font-size: 15px; color: #e53935;")
             self._warn_label.setText("⚠ Too High")
         elif self._sensor.warn_low is not None and val < self._sensor.warn_low:
             self._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #e53935;")
+            self._warn_label.setStyleSheet("font-size: 15px; color: #e53935;")
             self._warn_label.setText("⚠ Too Low")
         else:
             self._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #ffffff;")
+            self._warn_label.setStyleSheet("font-size: 15px; color: #66bb6a;")
             self._warn_label.setText("Safe")
+
+
+class SensorChart(pg.PlotWidget):
+    MAX_POINTS = 30
+
+    def __init__(self, sensor, color, parent=None):
+        super().__init__(parent=parent, background="#1e1e1e")
+        self._sensor = sensor
+        self._data = deque(maxlen=self.MAX_POINTS)
+
+        self.setTitle(sensor.name, color="#aaaaaa", size="10pt")
+        self.getPlotItem().hideAxis("bottom")
+        self.getPlotItem().getAxis("left").setTextPen("#888888")
+        self.setMouseEnabled(x=False, y=False)
+        self.setMenuEnabled(False)
+        self.setMinimumHeight(150)
+
+        if sensor.warn_high is not None:
+            self.addLine(y=sensor.warn_high, pen=pg.mkPen("#e53935", width=1, style=Qt.PenStyle.DashLine))
+        if sensor.warn_low is not None:
+            self.addLine(y=sensor.warn_low, pen=pg.mkPen("#e53935", width=1, style=Qt.PenStyle.DashLine))
+
+        self._curve = self.plot(pen=pg.mkPen(color, width=2))
+
+    def refresh(self):
+        self._data.append(self._sensor.value())
+        self._curve.setData(list(self._data))
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Device Monitor Dashboard")
-        self.resize(900, 600)
+        self.resize(1000, 700)
         self.setStyleSheet("background-color: #1e1e1e;")
 
         self._simulator = DataSimulator(self)
@@ -86,6 +123,16 @@ class MainWindow(QMainWindow):
             self._cards.append(card)
             cards_row.addWidget(card)
         root.addLayout(cards_row)
+
+        # charts
+        charts_row = QHBoxLayout()
+        charts_row.setSpacing(20)
+        self._charts = []
+        for sensor, color in zip(self._simulator.sensors, _CHART_COLORS):
+            chart = SensorChart(sensor, color)
+            self._charts.append(chart)
+            charts_row.addWidget(chart)
+        root.addLayout(charts_row)
 
         # start/stop
         self._toggle_btn = QPushButton()
@@ -121,6 +168,8 @@ class MainWindow(QMainWindow):
     def _on_data_updated(self):
         for card in self._cards:
             card.refresh()
+        for chart in self._charts:
+            chart.refresh()
         now = QDateTime.currentDateTime().toString("hh:mm:ss AP")
         self._status_label.setText(f"Last updated at {now}")
 

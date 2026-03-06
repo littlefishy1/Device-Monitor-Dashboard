@@ -100,7 +100,7 @@ Main components include:
 ### MainWindow
 
 The main dashboard window.  
-It creates the layout, connects the simulator to the UI, and handles user controls. I kept the UI components in `main.py` because they are mainly responsible for display and interaction, while the sensor logic stays in the core layer.
+It creates the layout, connects the simulator to the UI, and handles user controls. 
 
 ### SensorCard
 
@@ -109,6 +109,9 @@ Displays the current value of a sensor and shows warning messages if thresholds 
 ### SensorChart
 
 Displays a real-time graph of sensor data using **pyqtgraph**.
+
+I kept the UI components in `main.py` because they are mainly responsible for display and interaction, while the sensor logic stays in the core layer.
+
 
 ---
 

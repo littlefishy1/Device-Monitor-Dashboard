@@ -227,8 +227,10 @@ class MainWindow(QMainWindow):
         self._warnings_enabled = not self._warnings_enabled
         for card in self._cards:
             card.set_warnings_visible(self._warnings_enabled)
+            card.refresh()
         for chart in self._charts:
             chart.set_lines_visible(self._warnings_enabled)
+            chart.refresh()
         if self._warnings_enabled:
             label, bg, hover = "Warnings: ON", "#1565c0", "#1976d2"
 

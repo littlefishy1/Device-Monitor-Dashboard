@@ -70,7 +70,7 @@ Each sensor contains:
 - Warning thresholds
 - Current simulated value
 
-The sensors generate data using a simple update function.
+The sensors generate data using a simple update function. I kept the sensor classes in a separate file so the data generation logic is isolated from the UI and easier to test.
 
 ---
 
@@ -86,6 +86,7 @@ Responsibilities include:
 - Starting and stopping the simulation
 - Notifying the UI when data changes
 
+I separated the simulator from the UI so the timer and update loop are handled in one place instead of being mixed into the window code.
 ---
 
 ## User Interface (`main.py`)
@@ -97,7 +98,7 @@ Main components include:
 ### MainWindow
 
 The main dashboard window.  
-It creates the layout, connects the simulator to the UI, and handles user controls.
+It creates the layout, connects the simulator to the UI, and handles user controls. I kept the UI components in `main.py` because they are mainly responsible for display and interaction, while the sensor logic stays in the core layer.
 
 ### SensorCard
 

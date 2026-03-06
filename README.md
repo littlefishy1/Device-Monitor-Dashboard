@@ -78,7 +78,7 @@ The sensors generate data using a simple update function.
 
 The `DataSimulator` class manages sensor updates.
 
-It uses a **QTimer** to update sensor values every 1–2 seconds and emits a signal whenever new data is generated.
+It uses a **QTimer** to update sensor values every second and emits a signal whenever new data is generated.
 
 Responsibilities include:
 
@@ -163,11 +163,13 @@ The application includes the following features:
 
 - Main window with organized layout
 - Three simulated sensors (temperature, humidity, pressure)
-- Automatic updates every 1–2 seconds
-- Real-time chart showing recent sensor values
+- Automatic updates every second
+- Real time chart showing recent sensor values
 - Start / Stop button for the simulation
 - Reset button
 - Warning indicators when thresholds are exceeded
+- Warning toggle button
+
 
 Additional bonus features:
 
@@ -212,6 +214,8 @@ The goal of this project was to keep the application simple while demonstrating:
 
 - clean code structure
 - separation of logic and UI
-- object-oriented design
-- real-time updates using timers
+- object oriented design
+- real time updates using timers
 - basic testing of the data layer
+
+Thus, I chose not to implement theme toggle which will make the application too complicated

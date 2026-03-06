@@ -87,6 +87,8 @@ Responsibilities include:
 - Notifying the UI when data changes
 
 I separated the simulator from the UI so the timer and update loop are handled in one place instead of being mixed into the window code.
+
+
 ---
 
 ## User Interface (`main.py`)

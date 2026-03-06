@@ -16,6 +16,7 @@ class SensorCard(QFrame):
     def __init__(self, sensor, parent=None):
         super().__init__(parent)
         self._sensor = sensor
+        self._warnings_visible = True
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setMinimumWidth(220)
 
@@ -48,17 +49,29 @@ class SensorCard(QFrame):
             "SensorCard { background-color: #2b2b2b; border-radius: 10px; padding: 15px; }"
         )
 
+    def set_warnings_visible(self, visible: bool):
+        self._warnings_visible = visible
+        if not visible:
+            self._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #ffffff;")
+            self._warn_label.setText("")
+
     def refresh(self):
         val = self._sensor.value()
         self._value_label.setText(str(val))
+
+        if not self._warnings_visible:
+            return
+
         if self._sensor.warn_high is not None and val > self._sensor.warn_high:
             self._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #e53935;")
             self._warn_label.setStyleSheet("font-size: 15px; color: #e53935;")
             self._warn_label.setText("⚠ Too High")
+
         elif self._sensor.warn_low is not None and val < self._sensor.warn_low:
             self._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #e53935;")
             self._warn_label.setStyleSheet("font-size: 15px; color: #e53935;")
             self._warn_label.setText("⚠ Too Low")
+
         else:
             self._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #ffffff;")
             self._warn_label.setStyleSheet("font-size: 15px; color: #66bb6a;")
@@ -80,12 +93,20 @@ class SensorChart(pg.PlotWidget):
         self.setMenuEnabled(False)
         self.setMinimumHeight(150)
 
+        self._high_line = None
+        self._low_line = None
         if sensor.warn_high is not None:
-            self.addLine(y=sensor.warn_high, pen=pg.mkPen("#e53935", width=1, style=Qt.PenStyle.DashLine))
+            self._high_line = self.addLine(y=sensor.warn_high, pen=pg.mkPen("#e53935", width=1, style=Qt.PenStyle.DashLine))
         if sensor.warn_low is not None:
-            self.addLine(y=sensor.warn_low, pen=pg.mkPen("#e53935", width=1, style=Qt.PenStyle.DashLine))
+            self._low_line = self.addLine(y=sensor.warn_low, pen=pg.mkPen("#e53935", width=1, style=Qt.PenStyle.DashLine))
 
         self._curve = self.plot(pen=pg.mkPen(color, width=2))
+
+    def set_lines_visible(self, visible: bool):
+        if self._high_line is not None:
+            self._high_line.setVisible(visible)
+        if self._low_line is not None:
+            self._low_line.setVisible(visible)
 
     def refresh(self):
         self._data.append(self._sensor.value())
@@ -101,6 +122,7 @@ class MainWindow(QMainWindow):
 
         self._simulator = DataSimulator(self)
         self._simulator.data_updated.connect(self._on_data_updated)
+        self._warnings_enabled = True
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -134,15 +156,40 @@ class MainWindow(QMainWindow):
             charts_row.addWidget(chart)
         root.addLayout(charts_row)
 
-        # start/stop
+        # controls row: warnings toggle | start/stop  | reset
+        controls_row = QHBoxLayout()
+        controls_row.setSpacing(15)
         self._toggle_btn = QPushButton()
         self._toggle_btn.setFixedHeight(50)
         self._toggle_btn.setMinimumWidth(100)
         self._toggle_btn.clicked.connect(self._toggle_simulation)
         self._set_toggle_style(False)
-        root.addWidget(self._toggle_btn, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self._warn_toggle_btn = QPushButton("Warnings: ON")
+        self._warn_toggle_btn.setFixedHeight(50)
+        self._warn_toggle_btn.setMinimumWidth(130)
+        self._warn_toggle_btn.setStyleSheet(
+            "QPushButton { font-size: 13px; font-weight: bold; color: #ffffff;"
+            " background-color: #1565c0; border-radius: 10px; }"
+            "QPushButton:hover { background-color: #1976d2; }"
+        )
+        self._warn_toggle_btn.clicked.connect(self._on_toggle_warnings)
+        self._reset_btn = QPushButton("Reset")
+        self._reset_btn.setFixedHeight(50)
+        self._reset_btn.setMinimumWidth(100)
+        self._reset_btn.setStyleSheet(
+            "QPushButton { font-size: 13px; font-weight: bold; color: #ffffff;"
+            " background-color: #37474f; border-radius: 10px; }"
+            "QPushButton:hover { background-color: #455a64; }"
+        )
+        self._reset_btn.clicked.connect(self._on_reset)
+        controls_row.addStretch()
+        controls_row.addWidget(self._warn_toggle_btn)
+        controls_row.addWidget(self._toggle_btn)
+        controls_row.addWidget(self._reset_btn)
+        controls_row.addStretch()
+        root.addLayout(controls_row)
 
-        # status 
+        # status
         self._status_label = QLabel("Not started yet")
         self._status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._status_label.setStyleSheet("font-size: 15px; color: #666666;")
@@ -160,6 +207,39 @@ class MainWindow(QMainWindow):
             f" background-color: {bg}; border-radius: 10px; }}"
             f"QPushButton:hover {{ background-color: {hover}; }}"
         )
+
+    def _on_toggle_warnings(self):
+        self._warnings_enabled = not self._warnings_enabled
+        for card in self._cards:
+            card.set_warnings_visible(self._warnings_enabled)
+        for chart in self._charts:
+            chart.set_lines_visible(self._warnings_enabled)
+        if self._warnings_enabled:
+            label, bg, hover = "Warnings: ON", "#1565c0", "#1976d2"
+
+        else:
+            label, bg, hover = "Warnings: OFF", "#546e7a", "#607d8b"
+
+        self._warn_toggle_btn.setText(label)
+        self._warn_toggle_btn.setStyleSheet(
+            "QPushButton { font-size: 15px; font-weight: bold; color: #ffffff;"
+            f" background-color: {bg}; border-radius: 10px; }}"
+            f"QPushButton:hover {{ background-color: {hover}; }}"
+        )
+
+    def _on_reset(self):
+        self._simulator.stop()
+        self._set_toggle_style(False)
+        for sensor in self._simulator.sensors:
+            sensor._tick = 0
+        for chart in self._charts:
+            chart._data.clear()
+            chart._curve.setData([])
+        for card in self._cards:
+            card._value_label.setText("--")
+            card._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #ffffff;")
+            card._warn_label.setText("")
+        self._status_label.setText("Not started yet")
 
     def _toggle_simulation(self):
         self._simulator.toggle()

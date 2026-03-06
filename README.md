@@ -64,11 +64,11 @@ This file defines the simulated sensors:
 
 Each sensor contains:
 
-- sensor name
-- measurement unit
-- minimum and maximum values
-- warning thresholds
-- current simulated value
+- Sensor name
+- Measurement unit
+- Minimum and maximum values
+- Warning thresholds
+- Current simulated value
 
 The sensors generate data using a simple update function.
 
@@ -82,9 +82,9 @@ It uses a **QTimer** to update sensor values every second and emits a signal whe
 
 Responsibilities include:
 
-- updating sensor values
-- starting and stopping the simulation
-- notifying the UI when data changes
+- Updating sensor values
+- Starting and stopping the simulation
+- Notifying the UI when data changes
 
 ---
 
@@ -184,9 +184,9 @@ Basic unit tests are included for the sensor logic.
 
 The tests verify:
 
-- sensor metadata (name and unit)
-- generated values remain within valid ranges
-- warning detection works correctly
+- Sensor metadata (name and unit)
+- Generated values remain within valid ranges
+- Warning detection works correctly
 
 To run the tests:
 
@@ -212,10 +212,10 @@ If I had more time, I would improve several things:
 
 The goal of this project was to keep the application simple while demonstrating:
 
-- clean code structure
-- separation of logic and UI
-- object oriented design
-- real time updates using timers
-- basic testing of the data layer
+- Clean code structure
+- Separation of logic and UI
+- Object oriented design
+- Rreal time updates using timers
+- Basic testing of the data layer
 
 Thus, I chose not to implement theme toggle which will make the application too complicated

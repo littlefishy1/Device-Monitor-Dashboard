@@ -20,7 +20,7 @@ cd Device-Monitor-Dashboard
 ### 2. Install dependencies
 
 ```bash
-pip install pyqt6 pyqtgraph
+pip install -r requirements.txt
 ```
 
 

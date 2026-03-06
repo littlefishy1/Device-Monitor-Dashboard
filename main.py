@@ -28,16 +28,31 @@ class SensorCard(QFrame):
         self._unit_label.setAlignment( Qt.AlignmentFlag.AlignCenter)
         self._unit_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #888888;")
 
+        self._warn_label = QLabel("")
+        self._warn_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._warn_label.setStyleSheet("font-size: 15px; color: #e53935;")
+
         layout.addWidget(self._name_label)
         layout.addWidget(self._value_label)
         layout.addWidget(self._unit_label)
+        layout.addWidget(self._warn_label)
 
         self.setStyleSheet(
             "SensorCard { background-color: #2b2b2b; border-radius: 10px; padding: 15px; }"
         )
 
     def refresh(self):
-        self._value_label.setText(str(self._sensor.value()))
+        val = self._sensor.value()
+        self._value_label.setText(str(val))
+        if self._sensor.warn_high is not None and val > self._sensor.warn_high:
+            self._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #e53935;")
+            self._warn_label.setText("⚠ Too High")
+        elif self._sensor.warn_low is not None and val < self._sensor.warn_low:
+            self._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #e53935;")
+            self._warn_label.setText("⚠ Too Low")
+        else:
+            self._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #ffffff;")
+            self._warn_label.setText("Safe")
 
 
 class MainWindow(QMainWindow):

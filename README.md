@@ -1,0 +1,217 @@
+# Device Monitor Dashboard
+
+## Option Chosen
+
+I chose **Option A (Python + PyQt6)**.
+
+Python is the language I am most comfortable with and PyQt6 provides a straightforward way to build desktop user interfaces. I also used **pyqtgraph** for plotting because it integrates well with PyQt and supports real time updates efficiently. This option allowed me to focus more on application structure and UI interaction
+
+---
+
+# How to Build and Run
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/littlefishy1/Device-Monitor-Dashboard
+cd Device-Monitor-Dashboard
+```
+
+### 2. Install dependencies
+
+```bash
+pip install pyqt6 pyqtgraph
+```
+
+
+### 3. Run the application
+
+```bash
+python main.py
+```
+
+A dashboard window should appear.  
+Press **Start** to begin the simulated sensor updates.
+
+---
+
+# Code Architecture
+
+The project is divided into two main layers: the **logic layer** and the **UI layer**.
+
+```
+project/
+│
+├── main.py
+│
+├── core/
+│   ├── sensor.py
+│   └── simulator.py
+│
+└── tests/
+    └── test_sensors.py
+```
+
+---
+
+## Sensors (`sensor.py`)
+
+This file defines the simulated sensors:
+
+- `TemperatureSensor`
+- `HumiditySensor`
+- `PressureSensor`
+
+Each sensor contains:
+
+- sensor name
+- measurement unit
+- minimum and maximum values
+- warning thresholds
+- current simulated value
+
+The sensors generate data using a simple update function.
+
+---
+
+## Data Simulator (`simulator.py`)
+
+The `DataSimulator` class manages sensor updates.
+
+It uses a **QTimer** to update sensor values every 1–2 seconds and emits a signal whenever new data is generated.
+
+Responsibilities include:
+
+- updating sensor values
+- starting and stopping the simulation
+- notifying the UI when data changes
+
+---
+
+## User Interface (`main.py`)
+
+The UI is built in `main.py`.
+
+Main components include:
+
+### MainWindow
+
+The main dashboard window.  
+It creates the layout, connects the simulator to the UI, and handles user controls.
+
+### SensorCard
+
+Displays the current value of a sensor and shows warning messages if thresholds are exceeded.
+
+### SensorChart
+
+Displays a real-time graph of sensor data using **pyqtgraph**.
+
+---
+
+# Design Patterns Used
+
+### Observer Pattern
+
+Qt’s **signal / slot system** is used to update the UI whenever new sensor data is generated.
+
+Example flow:
+
+```
+DataSimulator updates sensors
+        ↓
+DataSimulator emits signal
+        ↓
+MainWindow receives signal
+        ↓
+UI components refresh
+```
+
+This allows the data logic and UI to remain loosely coupled.
+
+---
+
+# Architecture Diagram
+
+```
+          +-------------------+
+          |   DataSimulator   |
+          |-------------------|
+          | updates sensors   |
+          | emits signal      |
+          +---------+---------+
+                    |
+              data_updated
+                    |
+                    v
+             +------+------+
+             |  MainWindow |
+             +------+------+
+                    |
+       +------------+-------------+
+       |                          |
+       v                          v
+   SensorCard                 SensorChart
+ (display values)        (display data graph)
+```
+
+---
+
+# Features Implemented
+
+The application includes the following features:
+
+- Main window with organized layout
+- Three simulated sensors (temperature, humidity, pressure)
+- Automatic updates every 1–2 seconds
+- Real-time chart showing recent sensor values
+- Start / Stop button for the simulation
+- Reset button
+- Warning indicators when thresholds are exceeded
+
+Additional bonus features:
+
+- Export sensor data to CSV
+- Unit tests for the sensor logic
+
+---
+
+# Unit Tests
+
+Basic unit tests are included for the sensor logic.
+
+The tests verify:
+
+- sensor metadata (name and unit)
+- generated values remain within valid ranges
+- warning detection works correctly
+
+To run the tests:
+
+```bash
+python tests/test_sensors.py
+```
+
+---
+
+# Known Issues / Possible Improvements
+
+If I had more time, I would improve several things:
+
+- Improve chart axis labeling and scaling
+- Make warning thresholds configurable instead of hard-coded
+- Improve UI styling and layout responsiveness
+- Add more unit tests for the simulator logic
+- Further separate UI and logic layers
+
+---
+
+# Notes
+
+The goal of this project was to keep the application simple while demonstrating:
+
+- clean code structure
+- separation of logic and UI
+- object-oriented design
+- real-time updates using timers
+- basic testing of the data layer

@@ -1,7 +1,8 @@
+import csv
 import sys
 
 from PyQt6.QtCore import Qt, QDateTime
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget, QFileDialog
 
 
 from core.simulator import DataSimulator
@@ -156,14 +157,15 @@ class MainWindow(QMainWindow):
             charts_row.addWidget(chart)
         root.addLayout(charts_row)
 
-        # controls row: warnings toggle | start/stop  | reset
+        # controls row: warnings toggle | start/stop  | reset | export
         controls_row = QHBoxLayout()
         controls_row.setSpacing(15)
         self._toggle_btn = QPushButton()
         self._toggle_btn.setFixedHeight(50)
-        self._toggle_btn.setMinimumWidth(100)
+        self._toggle_btn.setMinimumWidth(130)
         self._toggle_btn.clicked.connect(self._toggle_simulation)
         self._set_toggle_style(False)
+
         self._warn_toggle_btn = QPushButton("Warnings: ON")
         self._warn_toggle_btn.setFixedHeight(50)
         self._warn_toggle_btn.setMinimumWidth(130)
@@ -172,20 +174,33 @@ class MainWindow(QMainWindow):
             " background-color: #1565c0; border-radius: 10px; }"
             "QPushButton:hover { background-color: #1976d2; }"
         )
+
         self._warn_toggle_btn.clicked.connect(self._on_toggle_warnings)
         self._reset_btn = QPushButton("Reset")
         self._reset_btn.setFixedHeight(50)
-        self._reset_btn.setMinimumWidth(100)
+        self._reset_btn.setMinimumWidth(130)
         self._reset_btn.setStyleSheet(
             "QPushButton { font-size: 13px; font-weight: bold; color: #ffffff;"
             " background-color: #37474f; border-radius: 10px; }"
             "QPushButton:hover { background-color: #455a64; }"
         )
         self._reset_btn.clicked.connect(self._on_reset)
+
+        self._export_btn = QPushButton("Export Data")
+        self._export_btn.setFixedHeight(50)
+        self._export_btn.setMinimumWidth(130)
+        self._export_btn.setStyleSheet(
+            "QPushButton { font-size: 13px; font-weight: bold; color: #ffffff;"
+            " background-color: #00695c; border-radius: 10px; }"
+            "QPushButton:hover { background-color: #00796b; }"
+        )
+        self._export_btn.clicked.connect(self._on_export_csv)
+
         controls_row.addStretch()
         controls_row.addWidget(self._warn_toggle_btn)
         controls_row.addWidget(self._toggle_btn)
         controls_row.addWidget(self._reset_btn)
+        controls_row.addWidget(self._export_btn)
         controls_row.addStretch()
         root.addLayout(controls_row)
 
@@ -240,6 +255,24 @@ class MainWindow(QMainWindow):
             card._value_label.setStyleSheet("font-size: 50px; font-weight: bold; color: #ffffff;")
             card._warn_label.setText("")
         self._status_label.setText("Not started yet")
+
+    def _on_export_csv(self):
+        path, _ = QFileDialog.getSaveFileName(self, "Export Sensor Data", "sensor_data.csv", "CSV Files (*.csv)")
+
+        if not path:
+            return
+        names = [c._sensor.name for c in self._charts]
+        cols = [list(c._data) for c in self._charts]
+        length = max((len(c) for c in cols))
+
+        with open(path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Step"] + names)
+            for i in range(length):
+                row = [i + 1]
+                for col in cols:
+                    row.append(col[i] if i < len(col) else "")
+                writer.writerow(row)
 
     def _toggle_simulation(self):
         self._simulator.toggle()

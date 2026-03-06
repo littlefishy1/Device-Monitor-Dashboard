@@ -29,7 +29,7 @@ class TemperatureSensor(Sensor):
     def _generate(self):
         base = 27.0
         sine = 8.0 * math.sin(self._tick * 0.15)
-        noise = random.uniform(-1.5, 1.5)
+        noise = random.uniform(-0.5, 0.5)
         value = round(max(self.min_val, min(self.max_val, base + sine + noise)), 1)
         return value
 
@@ -41,7 +41,7 @@ class HumiditySensor(Sensor):
     def _generate(self):
         base = 45.0
         sine = 15.0 * math.sin(self._tick * 0.08 + 1.0)
-        noise = random.uniform(-3.0, 3.0)
+        noise = random.uniform(-1.0, 1.0)
         value = round(max(self.min_val, min(self.max_val, base + sine + noise)), 1)
         return value
 
@@ -53,6 +53,6 @@ class PressureSensor(Sensor):
     def _generate(self):
         base = 1010.0
         sine = 10.0 * math.sin(self._tick * 0.05 + 0.5)
-        noise = random.uniform(-2.0, 2.0)
+        noise = random.uniform(-1.0, 1.0)
         value = round(max(self.min_val, min(self.max_val, base + sine + noise)), 1)
         return value

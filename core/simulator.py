@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 
-from core.sensor import HumiditySensor, PressureSensor, TemperatureSensor
+from .sensor import HumiditySensor, PressureSensor, TemperatureSensor
 
 
 class DataSimulator(QObject):
@@ -8,18 +8,15 @@ class DataSimulator(QObject):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.sensors = [
-            TemperatureSensor(),
-            HumiditySensor(),
-            PressureSensor(),
-        ]
+        self.sensors = [TemperatureSensor(),HumiditySensor(), PressureSensor()]
         self._running = False
         self._timer = QTimer(self)
         self._timer.setInterval(1000)
         self._timer.timeout.connect(self._tick)
 
+
     @property
-    def is_running(self):
+    def running(self):
         return self._running
 
     def start(self):
